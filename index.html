@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Candy Rank Online</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍬</text></svg>">
+<style>
+:root{--bg:#fff4f8;--card:#fff;--ink:#3a2340;--mut:#8a7090;--acc:#ff4f9a;--acc2:#7a4dff;--hp:#38c172;--line:#f0d6e4;
+--g0:#ffd9de;--g1:#d3ecff;--g2:#fff0b3;--g3:#d5f5d9;--g4:#e6d9ff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1226;--card:#2a1b38;--ink:#fbeaf5;--mut:#b497c0;--line:#44305a;--g0:#5a2733;--g1:#1f3f5c;--g2:#5a4c1a;--g3:#1f4a2a;--g4:#432d6b}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Baloo 2","Nunito",system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:460px;margin:0 auto;padding:14px}
+h1{font-size:34px;margin:6px 0 2px;line-height:1.05;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;margin:10px 0}
+.btn{display:block;width:100%;border:0;border-radius:16px;padding:14px;font:inherit;font-weight:800;font-size:19px;color:#fff;background:linear-gradient(90deg,var(--acc),var(--acc2));box-shadow:0 5px 0 rgba(0,0,0,.2);cursor:pointer}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.btn.ghost{background:var(--card);color:var(--ink);border:2px solid var(--line);box-shadow:none;font-size:16px;margin-top:8px}
+.row{display:flex;align-items:center;gap:10px}
+.bar{height:12px;background:var(--line);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--hp);transition:width .3s}
+.bar.xp i{background:var(--acc2)}
+.mut{color:var(--mut);font-size:14px}
+.lb{display:flex;gap:10px;padding:6px 4px;border-bottom:1px dashed var(--line)}
+.lb:last-child{border:0}.lb b{width:26px}.lb span:nth-child(2){flex:1}.lb.me{color:var(--acc);font-weight:800}
+.chars{display:grid;gap:10px}
+.ch{display:flex;gap:12px;align-items:center;border:3px solid var(--line);border-radius:16px;padding:12px;background:var(--card);cursor:pointer;font:inherit;color:inherit;text-align:left;width:100%}
+.ch.sel{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 25%,transparent)}
+.av{width:64px;height:64px;flex:none;background:var(--bg);border-radius:50%;overflow:hidden;border:2px solid var(--line)}
+.av svg{width:100%;height:100%;display:block}
+.pl{display:flex;align-items:center;gap:10px;padding:8px 10px}
+.pl .av{width:48px;height:48px}.pl .bar{height:14px;margin-top:3px}
+.pl .nm{flex:1;min-width:0}.pl .nm b{font-size:15px}
+.board{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:6px;background:var(--card);border:2px solid var(--line);border-radius:16px;touch-action:none;user-select:none}
+.g{aspect-ratio:1;border-radius:14px;display:grid;place-items:center;font-size:clamp(24px,8.5vw,38px);transition:transform .2s;cursor:pointer;background:var(--gc)}
+.g.sel{outline:3px solid var(--ink);transform:scale(1.08)}
+.g.pop{transform:scale(0)}
+.fl{position:fixed;left:50%;font-weight:900;font-size:28px;pointer-events:none;animation:up 1s forwards;transform:translateX(-50%);z-index:5;text-shadow:0 2px 0 #fff8}
+@keyframes up{to{opacity:0;margin-top:-70px}}
+.shake{animation:sh .3s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.msg{text-align:center;font-weight:800;min-height:24px;margin:6px 0}
+.big{font-size:64px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const GEM=['🍎','💧','⚡','🍀','🔮'],C=6,R=7;
+const SVG={
+kiemsi:'<svg viewBox="0 0 64 64"><path d="M50 4l5 5-22 27-5-5z" fill="#cfd8e3"/><rect x="21" y="31" width="12" height="4" rx="1" transform="rotate(45 27 33)" fill="#b8860b"/><circle cx="32" cy="38" r="15" fill="#f6c9a0"/><path d="M16 38a16 16 0 0 1 32 0z" fill="#7b8794"/><rect x="29" y="16" width="6" height="20" fill="#7b8794"/><path d="M32 4c7 2 9 9 3 13h-6c-6-4-4-11 3-13z" fill="#e53e3e"/><circle cx="26" cy="42" r="2" fill="#333"/><circle cx="38" cy="42" r="2" fill="#333"/><path d="M28 48q4 3 8 0" stroke="#a0522d" fill="none" stroke-width="2"/><path d="M12 64q20-18 40 0z" fill="#4a5568"/></svg>',
+maphap:'<svg viewBox="0 0 64 64"><path d="M32 3L50 31H14z" fill="#6b46c1"/><ellipse cx="32" cy="31" rx="22" ry="5" fill="#553c9a"/><circle cx="32" cy="17" r="3" fill="#faf089"/><circle cx="32" cy="42" r="12" fill="#f6c9a0"/><circle cx="27" cy="40" r="2" fill="#333"/><circle cx="37" cy="40" r="2" fill="#333"/><path d="M20 45q12 24 24 0z" fill="#f7fafc"/><path d="M8 64q24-16 48 0z" fill="#553c9a"/></svg>',
+cungthu:'<svg viewBox="0 0 64 64"><path d="M54 8q11 24 0 48" stroke="#8b5a2b" stroke-width="3" fill="none"/><path d="M54 8v48" stroke="#ddd" stroke-width="1"/><path d="M13 44a19 21 0 0 1 38 0v12H13z" fill="#2f855a"/><circle cx="32" cy="40" r="12" fill="#f6c9a0"/><path d="M18 36a14 14 0 0 1 28 0q-14-7-28 0z" fill="#2f855a"/><circle cx="27" cy="41" r="2" fill="#333"/><circle cx="37" cy="41" r="2" fill="#333"/><path d="M28 47q4 2 8 0" stroke="#a0522d" fill="none" stroke-width="2"/><path d="M8 64q24-14 48 0z" fill="#276749"/></svg>'};
+const CH=[
+ {id:'kiemsi',name:'Kiếm sĩ',hp:120,dmg:7,aff:0,desc:'Ghép 🍎 gây x1.5 sát thương'},
+ {id:'maphap',name:'Pháp sư',hp:90,dmg:9,aff:4,desc:'Sát thương cao, ghép 🔮 x1.5'},
+ {id:'cungthu',name:'Cung thủ',hp:100,dmg:8,aff:3,desc:'Ghép 🍀 x1.5, 20% chí mạng'}];
+const BOTS=['Hắc Long','Mèo Béo','NightFury','Lão Ngạo','Tiểu Mai','ProGamer99','Sói Xám','Hải Âu'];
+let S={lv:{kiemsi:1,maphap:1,cungthu:1},xp:{kiemsi:0,maphap:0,cungthu:0},rp:0,sel:'kiemsi',name:'Player'+(100+Math.floor(Math.random()*900))};
+try{const d=localStorage.getItem('candyrank2');if(d)S=Object.assign(S,JSON.parse(d))}catch(e){}
+const save=()=>{try{localStorage.setItem('candyrank2',JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s),app=$('#app');
+const sleep=t=>new Promise(r=>setTimeout(r,t)),rnd=n=>Math.floor(Math.random()*n);
+const av=id=>`<div class="av">${SVG[id]}</div>`;
+const plvl=()=>Object.values(S.lv).reduce((a,b)=>a+b,0)-2;
+const rawLB=[['Hắc Long',420],['Mèo Béo',310],['NightFury',240],['Lão Ngạo',150],['Tiểu Mai',80],['Sói Xám',30]];
+let ws=null,handler=null;
+
+function menu(){
+ const c=CH.find(x=>x.id===S.sel),need=S.lv[c.id]*50,L=rawLB.concat([[S.name,S.rp,1]]).sort((x,y)=>y[1]-x[1]),mi=L.findIndex(p=>p[2]);
+ app.innerHTML=`<h1>Candy Rank</h1><div class="mut">Ghép 3 để tấn công, combo càng lớn đau càng nhiều</div>
+ <div class="card"><div class="row">${av(c.id)}<div style="flex:1"><b>${S.name} · Level ${plvl()}</b><div class="mut">Điểm rank: ${S.rp}</div>
+ <div class="bar xp" style="margin-top:6px"><i style="width:${S.xp[c.id]/need*100}%"></i></div><div class="mut">${c.name} Lv.${S.lv[c.id]} · ${S.xp[c.id]}/${need} XP</div></div></div></div>
+ <button class="btn" id="go">Bắt đầu đấu rank</button>
+ <div class="card"><b>Bảng xếp hạng</b>${L.slice(0,6).map((p,i)=>`<div class="lb ${p[2]?'me':''}"><b>${i+1}</b><span>${p[0]}</span><span>${p[1]} RP</span></div>`).join('')}
+ ${mi>5?`<div class="lb me"><b>${mi+1}</b><span>${S.name}</span><span>${S.rp} RP</span></div>`:''}</div>`;
+ $('#go').onclick=pick;
+}
+function pick(){
+ app.innerHTML=`<h1>Chọn nhân vật</h1><div class="chars">${CH.map((c,i)=>`<button class="ch ${c.id===S.sel?'sel':''}" data-id="${c.id}">${av(c.id)}<div><b>${i+1}. ${c.name} (level:${S.lv[c.id]})</b><div class="mut">HP ${c.hp+(S.lv[c.id]-1)*10} · Sát thương ${c.dmg}/viên</div><div class="mut">${c.desc}</div></div></button>`).join('')}</div>
+ <div style="height:14px"></div><button class="btn" id="m">Tìm trận</button><button class="btn ghost" id="b">Quay lại</button>`;
+ document.querySelectorAll('.ch').forEach(b=>b.onclick=()=>{S.sel=b.dataset.id;save();pick()});
+ $('#m').onclick=match;$('#b').onclick=menu;
+}
+function match(){
+ app.innerHTML=`<div class="big" style="margin-top:80px">🔍</div><h1 style="text-align:center">Đang ghép trận…</h1><div class="msg mut" id="st">Tìm người chơi online</div><button class="btn ghost" id="x">Hủy</button>`;
+ let done=false;
+ $('#x').onclick=()=>{done=true;kill();menu()};
+ const botMatch=async()=>{if(done)return;done=true;kill();$('#st').textContent='Không có ai online, ghép với bot';await sleep(1000);const oc=CH[rnd(3)];start({name:BOTS[rnd(BOTS.length)],tag:'Bot',c:oc,lv:Math.max(1,S.lv[S.sel]+rnd(3)-1)})};
+ if(!/^https?:$/.test(location.protocol)||!location.host)return setTimeout(botMatch,1500);
+ try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host)}catch(e){return botMatch()}
+ const t=setTimeout(botMatch,9000);
+ ws.onopen=()=>ws.send(JSON.stringify({t:'queue',name:S.name,ch:S.sel,lv:S.lv[S.sel]}));
+ ws.onerror=()=>{clearTimeout(t);botMatch()};
+ ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}
+  if(m.t==='match'&&!done){done=true;clearTimeout(t);start({name:m.op.name,tag:'Player',c:CH.find(x=>x.id===m.op.ch)||CH[0],lv:m.op.lv,net:true})}
+  else if(handler)handler(m)};
+}
+function kill(){handler=null;if(ws){try{ws.onerror=ws.onmessage=null;ws.close()}catch(e){}ws=null}}
+
+function start(op){
+ const me=CH.find(x=>x.id===S.sel),ml=S.lv[me.id];
+ const P={hp:me.hp+(ml-1)*10,max:me.hp+(ml-1)*10,base:me.dmg*(1+.1*(ml-1))};
+ const O={hp:op.c.hp+(op.lv-1)*10,max:op.c.hp+(op.lv-1)*10,base:op.c.dmg*(1+.1*(op.lv-1))};
+ let g=[],lock=false,pickd=null,over=false,bt=null,down=null;
+ const tx=o=>{if(op.net&&ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
+ const card=(c,n,lv,id)=>`<div class="card pl" id="${id}">${av(c.id)}<div class="nm"><b>${n} · Lv.${lv}</b><div class="bar"><i style="width:100%"></i></div></div><b class="hpn"></b></div>`;
+ app.innerHTML=`${card(op.c,op.name+' ('+op.tag+')',op.lv,'opc')}<div class="msg mut" id="msg">Đấu thời gian thực: ghép nhanh, combo lớn</div><div class="board" id="bd"></div>${card(me,S.name,ml,'mec')}`;
+ const bd=$('#bd');
+ const hpUI=()=>{[['opc',O],['mec',P]].forEach(([i,p])=>{$('#'+i+' .bar i').style.width=Math.max(0,p.hp/p.max*100)+'%';$('#'+i+' .hpn').textContent=Math.max(0,Math.ceil(p.hp))})};
+ const fl=(t,col,y)=>{const e=document.createElement('div');e.className='fl';e.style.color=col;e.style.top=y+'px';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),1000)};
+ const shake=id=>{const e=$('#'+id);if(!e)return;e.classList.add('shake');setTimeout(()=>e.classList.remove('shake'),300)};
+ const rand=()=>rnd(5);
+ function runs(){const out=[],at=(r,c)=>g[r*C+c];
+  for(let r=0;r<R;r++){let s=0;for(let c=1;c<=C;c++){if(c==C||at(r,c)!==at(r,s)){if(c-s>=3&&at(r,s)>=0)out.push({t:at(r,s),cells:Array.from({length:c-s},(_,k)=>r*C+s+k)});s=c}}}
+  for(let c=0;c<C;c++){let s=0;for(let r=1;r<=R;r++){if(r==R||at(r,c)!==at(s,c)){if(r-s>=3&&at(s,c)>=0)out.push({t:at(s,c),cells:Array.from({length:r-s},(_,k)=>(s+k)*C+c)});s=r}}}
+  return out}
+ function draw(pop=[],sel=-1){bd.innerHTML=g.map((v,i)=>`<div class="g ${pop.includes(i)?'pop':''} ${i===sel?'sel':''}" data-i="${i}" style="--gc:var(--g${Math.max(v,0)})">${v>=0?GEM[v]:''}</div>`).join('')}
+ function fall(){for(let c=0;c<C;c++){let w=R-1;for(let r=R-1;r>=0;r--)if(g[r*C+c]>=0){g[w*C+c]=g[r*C+c];w--}for(;w>=0;w--)g[w*C+c]=rand()}}
+ const swap=(a,b)=>{[g[a],g[b]]=[g[b],g[a]]};
+ function recv(d){if(over)return;P.hp-=d;hpUI();fl('-'+d,'#ef4444',bd.getBoundingClientRect().bottom-40);shake('mec');
+  if(P.hp<=0){tx({t:'lose'});end(false)}}
+ async function attempt(a,b){
+  if(lock||over)return;lock=true;pickd=null;
+  swap(a,b);draw();await sleep(160);
+  if(!runs().length){swap(a,b);draw();lock=false;return}
+  let step=0;
+  while(!over){
+   const rs=runs();if(!rs.length)break;step++;
+   let dmg=0;const set=new Set();
+   rs.forEach(r=>{const n=r.cells.length;let d=n*P.base*(n>=5?2:n>=4?1.5:1);if(r.t===me.aff)d*=1.5;dmg+=d;r.cells.forEach(i=>set.add(i))});
+   dmg=Math.round(dmg*(1+.5*(step-1)));
+   if(me.id==='cungthu'&&Math.random()<.2){dmg*=2;fl('CHÍ MẠNG!','#ef4444',bd.getBoundingClientRect().top-10)}
+   O.hp-=dmg;tx({t:'hit',d:dmg});
+   draw([...set]);await sleep(220);
+   set.forEach(i=>g[i]=-1);fall();draw();hpUI();shake('opc');
+   fl('-'+dmg+(step>1?' · combo x'+step:''),'#ff4f9a',bd.getBoundingClientRect().top+30+step*6);
+   if(O.hp<=0&&!over){tx({t:'win'});end(true);return}
+   await sleep(200);
+  }
+  if(!over)lock=false;
+ }
+ function end(win){
+  if(over)return;over=true;clearInterval(bt);kill();
+  const id=me.id,gain=win?40:10,rp=win?25:-10;
+  S.xp[id]+=gain;S.rp=Math.max(0,S.rp+rp);let up=false;
+  while(S.xp[id]>=S.lv[id]*50){S.xp[id]-=S.lv[id]*50;S.lv[id]++;up=true}
+  save();
+  setTimeout(()=>{app.innerHTML=`<div class="big" style="margin-top:60px">${win?'🏆':'💔'}</div><h1 style="text-align:center">${win?'Chiến thắng!':'Thua rồi'}</h1>
+  <div class="card"><div class="lb"><span>Điểm rank</span><span>${rp>0?'+':''}${rp} RP (tổng ${S.rp})</span></div><div class="lb"><span>Kinh nghiệm</span><span>+${gain} XP</span></div>${up?`<div class="lb me"><span>${me.name} lên Level ${S.lv[id]}!</span></div>`:''}</div>
+  <button class="btn" id="a">Đấu tiếp</button><button class="btn ghost" id="b">Về menu</button>`;
+  $('#a').onclick=match;$('#b').onclick=menu},900);
+ }
+ handler=m=>{if(m.t==='hit')recv(Math.round(m.d));else if(m.t==='win')end(false);else if(m.t==='lose'||m.t==='left')end(true)};
+ if(op.net&&ws)ws.onclose=()=>{if(!over)end(true)};
+ if(!op.net)bt=setInterval(()=>recv(Math.round(O.base*(1.2+Math.random()*2.2))),2600);
+ bd.onpointerdown=e=>{const t=e.target.closest('.g');if(t)down={i:+t.dataset.i,x:e.clientX,y:e.clientY}};
+ bd.onpointerup=e=>{
+  if(!down||lock||over){down=null;return}
+  const i=down.i,dx=e.clientX-down.x,dy=e.clientY-down.y;down=null;
+  const adj=(a,b)=>Math.abs(a-b)===C||(Math.abs(a-b)===1&&Math.floor(a/C)===Math.floor(b/C));
+  if(Math.hypot(dx,dy)>18){const j=Math.abs(dx)>Math.abs(dy)?(dx>0?i+1:i-1):(dy>0?i+C:i-C);if(j>=0&&j<C*R&&adj(i,j))attempt(i,j);return}
+  if(pickd===null){pickd=i;draw([],i)}else if(adj(pickd,i))attempt(pickd,i);else{pickd=i;draw([],i)}
+ };
+ do{g=Array.from({length:C*R},rand)}while(runs().length);
+ draw();hpUI();
+}
+menu();
+</script>
+</body>
+</html>
